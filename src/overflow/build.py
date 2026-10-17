@@ -24,6 +24,7 @@ from overflow.adapter import build_adapter, load_model
 from overflow.biomass import apply_protein_content
 from overflow.config import (
     BIO_RXN,
+    BYPRODUCT_RXNS,
     C_SOURCE,
     CO2_RXN,
     CONDITION_ORDER,
@@ -345,6 +346,7 @@ def summary_table(results: list[BuildResult]) -> pd.DataFrame:
                 "glucose": round(result.glucose, 4),
                 "CO2": round(float(result.fluxes[CO2_RXN]), 4),
                 "O2": round(-float(result.fluxes[O2_RXN]), 4),
+                "ethanol": round(float(result.fluxes[BYPRODUCT_RXNS["Ethanol"]]), 4),
                 "pool_used_mg_gDW": round(float(result.fluxes[POOL_RXN]), 1),
             }
         )

@@ -26,7 +26,8 @@ POSITIONS = np.concatenate([np.arange(len(ORDER))[:len(SETS["ThisStudy"]["conds"
                             np.arange(len(ORDER))[len(SETS["ThisStudy"]["conds"]):] + 0.6])
 SYSTEMS = ("Glycolysis", "TCA cycle", "ETC", "Ribosome")
 SUPPLEMENT = ("PP shunt", "THF cycle", "Nitrogen metabolism", "Amino acid metabolism")
-EXCHANGES = {"Glucose": "r_1714", "CO2": "r_1672", "Oxygen": "r_1992", "Ethanol": "r_1761"}
+#: measured exchange (fermentationData.txt) -> modelled rate in the build summary
+EXCHANGES = {"Glucose": "glucose", "CO2": "CO2", "Oxygen": "O2", "Ethanol": "ethanol"}
 TEXT, SMALL, LINE = 7.0, 5.6, 0.15 * _POINTS_PER_SIZE
 STYLE = {"font.family": FONTS, "pdf.fonttype": 42, "font.size": SMALL, "axes.linewidth": LINE,
          "xtick.major.width": LINE, "ytick.major.width": LINE, "xtick.major.size": 2.75,
@@ -68,15 +69,15 @@ def overflowing(c):
 def table_conditions():
     rows = []
     for ds, s in SETS.items():
+        summary = read(ds, "results", "modelGeneration", "summary.tsv").set_index("condition")
         for c in s["conds"]:
-            flux = read(ds, "results", "modelSimulation", f"allFluxes_{c}.tsv").set_index("rxnID")["flux"]
             gen = lambda kind: s["root"] / "results" / "modelGeneration" / f"{kind}_{c}.tsv"
             relaxed = pd.read_csv(gen("relaxedEnzymes"), sep="\t") if gen("relaxedEnzymes").exists() else pd.DataFrame(columns=["added_mg_gDW"])
             row = dict(dataset=SETS[ds]["label"], condition=name(c), D=FERM.loc[c, "D"], Ptot=FERM.loc[c, "Ptot"])
-            for ex, rid in EXCHANGES.items():
+            for ex, column in EXCHANGES.items():
                 measured = FERM.loc[c, ex]
                 row[f"{ex} meas"] = 0.0 if pd.isna(measured) else measured
-                row[f"{ex} model"] = abs(flux.get(rid, 0.0))
+                row[f"{ex} model"] = summary.loc[c, column]
             row["caps raised to minimum"] = len(pd.read_csv(gen("minimumUsage"), sep="\t"))
             row["caps relaxed for growth"] = len(pd.read_csv(gen("modifiedEnzymes"), sep="\t"))
             row["caps relaxed for rates"] = len(relaxed)
