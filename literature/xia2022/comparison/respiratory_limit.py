@@ -3,7 +3,7 @@
 Each built ecModel is held at its dilution rate. Caps the pipeline raised
 because the measurement could not support growth (raised to minimum,
 flexibilized) are lifted, since they carry no capacity information. Two
-variants for the caps the rate fit raised: kept as built ("built"), or put
+variants for the caps the rate fit raised: lifted as well ("lifted"), or put
 back to the measured abundance ("measured"). Maintenance ATP is free, so
 surplus glucose can be respired without overflow until a measured enzyme cap
 stops it; the respiratory limit is the largest uptake with no forced overflow.
@@ -67,6 +67,8 @@ def prepare(model, cond, generation, variant):
 
     read = lambda kind: pd.read_csv(generation / f"{kind}_{cond.name}.tsv", sep="\t")
     raised = set(read("minimumUsage")["protein"]) | set(read("modifiedEnzymes")["protein"])
+    if variant == "lifted":
+        raised |= set(read("relaxedEnzymes")["protein"])
     # a complex is lifted as a whole when any of its subunits was raised
     families = complex_families(model)
     no_information = {m for p in raised for m in families.members(p)}

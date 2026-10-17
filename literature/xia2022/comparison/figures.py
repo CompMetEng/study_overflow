@@ -367,6 +367,6 @@ if __name__ == "__main__":
     figure_reserve(r)
     figure_atp()
     if limits is not None:
-        figure_limit(limits, "built")
+        figure_limit(limits, "lifted")
     figure_turnover()
     print(open(TAB / "tables.md").read())
