@@ -54,6 +54,7 @@ def test_the_summary_reports_the_condition(built):
     table = summary_table([built])
     assert list(table["condition"]) == ["CN4"]
     assert table.loc[0, "growth"] >= 0.099
+    assert table.loc[0, "ethanol"] >= 0
 
 
 @pytest.fixture(scope="module")
