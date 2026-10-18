@@ -11,7 +11,7 @@ from pathlib import Path
 
 RUN = Path(__file__).resolve().parents[1]
 DATA = RUN / "data"
-NAMES = ("mu003", "mu010", "mu015", "mu021", "mu025", "mu028", "mu033", "mu038")
+NAMES = ("mu003", "mu004", "mu010", "mu015", "mu021", "mu025", "mu028", "mu033", "mu038")
 
 import overflow.config as config  # noqa: E402
 

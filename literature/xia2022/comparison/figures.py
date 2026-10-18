@@ -16,7 +16,7 @@ XIA = HERE.parent
 SETS = {
     "ThisStudy": dict(root=REPO, conds=["CN4", "CN22", "CN38", "CN75", "hGR"],
                       label="This study", colour=LEGACY_COLOURS[1], marker="o"),
-    "Xia": dict(root=XIA, conds=["mu003", "mu010", "mu015", "mu021", "mu025", "mu028", "mu033", "mu038"],
+    "Xia": dict(root=XIA, conds=["mu003", "mu004", "mu010", "mu015", "mu021", "mu025", "mu028", "mu033", "mu038"],
                 label="Xia et al. 2022", colour=LEGACY_COLOURS[2], marker="^"),
 }
 DISPLAY = {c: f"μ{int(c[2:]) / 100:.2f}" for c in SETS["Xia"]["conds"]}
@@ -143,6 +143,42 @@ def table_reserve(r):
     wide = long.pivot(index=["system", "mg/gDW"], columns="condition", values="value")[ORDER]
     wide = wide.reindex(pd.MultiIndex.from_product([list(SYSTEMS), ["used", "measured capacity"]]))
     return wide.rename(columns=DISPLAY).rename_axis(["system", "mg/gDW"]).reset_index()
+
+
+#: proteins that tell nitrogen from carbon limitation, the C1 and TCA enzymes, and storage
+MARKERS = {"GAP1": "P19145", "GLN1": "P32288", "GDH1": "P07262", "GCV1": "P48015", "GCV2": "P49095",
+           "SHM2": "P37291", "MTD1": "Q02046", "FDH1": "Q08911", "CIT1": "P00890", "SDH1": "Q00711",
+           "TPS1": "Q00764", "GSY2": "P27472"}
+#: carbon per gram of biomass, CH1.8O0.5N0.2 at 24.6 g/C-mol
+BIOMASS_C = 1000 / 24.6
+#: carbon atoms of the measured byproducts
+CARBONS = {"CO2": 1, "Ethanol": 2, "Acetate": 2, "Glycerol": 3, "Formate": 1}
+
+
+def table_physiology():
+    """Yields and carbon balance from the measured rates, and marker proteins in ppm of the measured protein mass."""
+    uniprot = read("ThisStudy", "data", "uniprot.tsv")
+    mass = dict(zip(uniprot["Entry"], uniprot["Mass"]))
+    rows = {}
+    for ds, s in SETS.items():
+        prot = read(ds, "data", "abs_proteomics.txt").set_index("Protein.IDs")
+        prefix = {"hGR": "CN_hGR_"} if ds == "ThisStudy" else {}
+        for c in s["conds"]:
+            f = FERM.loc[c].fillna(0.0)
+            mean = prot[[k for k in prot if k.startswith(prefix.get(c, f"{c}_")) and k.endswith("_abs")]].mean(axis=1)
+            mg = mean * mean.index.map(mass).to_numpy(dtype=float)
+            row = {
+                "biomass yield (g/g glucose)": f["D"] / (f["Glucose"] * 0.18016),
+                "glucose per biomass (mmol/g)": f["Glucose"] / f["D"],
+                "O2 per glucose": f["Oxygen"] / f["Glucose"],
+                "RQ": f["CO2"] / f["Oxygen"],
+                # this study reads an empty rate as undetected; the Xia series does not report formate
+                "formate (mmol/gDW/h)": f["Formate"] if ds == "ThisStudy" else np.nan,
+                "carbon recovery": (sum(n * f[k] for k, n in CARBONS.items()) + BIOMASS_C * f["D"]) / (6 * f["Glucose"]),
+            }
+            row.update({f"{g} (ppm)": 1e6 * mg.get(u, np.nan) / mg.sum() for g, u in MARKERS.items()})
+            rows[c] = row
+    return pd.DataFrame(rows)[ORDER].rename(columns=DISPLAY).reset_index().rename(columns={"index": "quantity"})
 
 
 def table_kcats():
@@ -358,6 +394,7 @@ if __name__ == "__main__":
         tables.append(("Table 5. Respiratory limit: the highest glucose uptake the measured proteome can respire completely at the condition's growth rate (mmol/gDW/h)",
                        limits.replace({"dataset": {k: v["label"] for k, v in SETS.items()}})))
     tables.append(("Table 6. Respiratory-chain kcats derived from each dataset: the highest apparent turnover across its conditions", table_kcats()))
+    tables.append(("Table 7. Physiology from the measured rates and marker proteins (ppm of the measured protein mass; empty: not detected)", table_physiology()))
     for i, (title, t) in enumerate(tables, 1):
         t.to_csv(TAB / f"table{i}.tsv", sep="\t", index=False)
     markdown(tables)

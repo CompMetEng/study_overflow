@@ -21,6 +21,7 @@ out = Path(out)
 # condition -> (row of the flux sheet by mu, proteomics sample columns, Ptot [g/gDW])
 CONDITIONS = {
     "mu003": (0.027, ["S1", "S2", "S3"], 0.299),
+    "mu004": (0.044, ["S4", "S5", "S6"], 0.312),
     "mu010": (0.10225, ["S7", "S8", "S9"], 0.371),
     "mu015": (0.152, ["S10", "S11", "S12"], 0.419),
     "mu021": (0.21425, ["S13", "S14", "S15"], 0.320),

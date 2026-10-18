@@ -1,10 +1,11 @@
 # Glucose-limited chemostat series (Xia et al. 2022)
 
-The analysis of this repository run on eight conditions of the glucose-limited chemostat series of Xia et al. (2022), *Nat Commun* 13:2819, [doi:10.1038/s41467-022-30513-2](https://doi.org/10.1038/s41467-022-30513-2), and compared with the results of this study in `results/`.
+The analysis of this repository run on nine conditions of the glucose-limited chemostat series of Xia et al. (2022), *Nat Commun* 13:2819, [doi:10.1038/s41467-022-30513-2](https://doi.org/10.1038/s41467-022-30513-2), and compared with the results of this study in `results/`.
 
 | Condition | D [1/h] | Ptot [g/gDW] | Ethanol [mmol/gDW/h] |
 |---|---|---|---|
 | mu003 | 0.027 | 0.299 | – |
+| mu004 | 0.044 | 0.312 | – |
 | mu010 | 0.10225 | 0.371 | – |
 | mu015 | 0.152 | 0.419 | – |
 | mu021 | 0.21425 | 0.320 | – |
@@ -35,8 +36,7 @@ The kcats of complex III, complex IV and ATP synthase are derived from this seri
 
 - `--rate-tolerance 0.16` instead of 0.08, in the build and in sampling (0.05 in this study). Holding growth, glucose, CO2 and O2 together needs at least 15.4% at mu015, 12.7% at mu025 and 11.6% at mu010, even with protein unlimited. The measured O2 uptake of the series exceeds what complete oxidation of its measured glucose consumes by 7–46%, so the band has to absorb the difference. As in this study, the protein objective puts predicted glucose at the top of its band: 1.16× measured here, 1.08× there.
 - `--uptake-flex 1.14` instead of 1.08: at 1.08× measured glucose mu015 and mu025 cannot reach their dilution rate.
-- GAM is the model's (55.3), as in this study. Fitted on this series alone, with glucose fixed and O2 free, it would be about 35 (95% interval 22–48); this study's conditions without ethanol all grow at D = 0.1, so its data cannot fit one. One GAM keeps the ATP budgets of the two datasets comparable. At 55.3 the build's maintenance fit finds 0 for every condition but mu003, and no non-negative value at mu010 and mu015; the rate band absorbs the difference.
-- The series' μ = 0.044 condition (samples S4–S6) is not included.
+- GAM is the model's (55.3), as in this study. Fitted on this series alone, with glucose fixed and O2 free, it would be about 35 (95% interval 22–48); this study's conditions without ethanol all grow at D = 0.1, so its data cannot fit one. One GAM keeps the ATP budgets of the two datasets comparable. At 55.3 the build's maintenance fit finds 0 for every condition but mu003 and mu004, and no non-negative value at mu010 and mu015; the rate band absorbs the difference.
 - The core ribosome is fixed rather than re-selected; see [`data/README.md`](data/README.md#core-ribosome).
 - `overflow.compare` is not run: it compares against the MATLAB results of this study's conditions only.
 - `--block r_2129` applies to the ecModels. Sampling uses the conventional GEM, where the proton leak stays open, as in this study.
@@ -48,8 +48,8 @@ The series attributes all of Ptot to measured proteins, while in this study the 
 `comparison/` puts both datasets side by side. It needs the ecModels of both runs, so run this study's recipe first.
 
 ```bash
-for c in CN4 CN22 CN38 CN75 hGR;                            do for v in lifted measured; do python $X/comparison/respiratory_limit.py ThisStudy $c $v; done; done
-for c in mu003 mu010 mu015 mu021 mu025 mu028 mu033 mu038; do for v in lifted measured; do python $X/comparison/respiratory_limit.py Xia $c $v; done; done
+for c in CN4 CN22 CN38 CN75 hGR;                                do for v in lifted measured; do python $X/comparison/respiratory_limit.py ThisStudy $c $v; done; done
+for c in mu003 mu004 mu010 mu015 mu021 mu025 mu028 mu033 mu038; do for v in lifted measured; do python $X/comparison/respiratory_limit.py Xia $c $v; done; done
 python $X/comparison/figures.py
 ```
 
@@ -63,4 +63,13 @@ python $X/comparison/figures.py
 | `figures/fig4_atp_budget` | Sampled ATP supply and demand, and the respiratory share of ATP. |
 | `figures/fig5_respiratory_limit` | Least overflow the proteome allows against glucose uptake, with the respiratory limits (raised caps lifted) and the measured byproduct carbon. |
 | `figures/fig6_apparent_turnover` | Apparent turnover of complex III, complex IV and ATP synthase relative to the highest in each dataset: sampled flux over measured complex, which needs no kcat. |
-| `tables/tables.md` | Tables 1–6 (also as `table<n>.tsv`): conditions and fit, capacity usage per system, enzyme mass used and measured capacity, ATP and redox budget, respiratory limit, and the derived respiratory-chain kcats. |
+| `tables/tables.md` | Tables 1–7 (also as `table<n>.tsv`): conditions and fit, capacity usage per system, enzyme mass used and measured capacity, ATP and redox budget, respiratory limit, the derived respiratory-chain kcats, and physiology with marker proteins. |
+
+### CN22 and μ0.28: what triggers overflow
+
+Both are the last condition of their series before ethanol, but they reach that point from opposite directions (Tables 3, 5 and 7).
+
+- **Ethanol: glucose uptake outgrows the respiratory capacity.** In this study glucose uptake rises with C/N while the TCA and ETC enzymes shrink with Ptot (TCA capacity 9.4, 7.2, 4.7 and 3.3 mg/gDW from CN4 to CN75). CN22 takes up 94% of a limit set by succinate dehydrogenase; CN38 is past its limit. In the Xia series the respiratory proteome grows with growth rate and peaks at μ0.28 (SDH1, CIT1, TCA capacity), which leaves it 27% below its limit. From μ0.33 the limit stops rising (5.06 at μ0.33 and μ0.38, set by complex IV) while glucose uptake keeps rising, and the surplus leaves as ethanol.
+- **Formate follows nitrogen limitation, not respiratory saturation.** It is secreted at CN22, CN38 and CN75 and rises with C/N (0.05, 0.34 and 0.48 mmol/gDW/h), while hGR secretes the most ethanol of this study and no formate. A C1 imbalance would explain it: C1 units come from serine, made from glycolytic carbon that is in excess, while their main sink, the nitrogen-rich purines, shrinks with nitrogen (ribosome capacity 43 to 22 mg/gDW from CN4 to CN75). The glycine cleavage system, which releases ammonium from glycine and leaves a C1 unit, is 1.6–2.7 times higher in the conditions that secrete formate than at CN4 and hGR, and FDH1, which would oxidise formate to CO2, is not detected in this study. In the carbon-limited series the glycine cleavage system stays level and FDH1 is detected.
+
+Limits of this reading: Xia et al. do not report formate, so a C1 overflow at μ0.28 cannot be excluded; the glycine cleavage system does not scale with the amount of formate; and the model secretes formate only where the measured rate imposes it, so it cannot test the mechanism. The proteomics of the two datasets are calibrated differently, and Xia et al. do not detect several membrane proteins (GAP1, the hexose transporters), so protein levels are compared within each dataset.

@@ -1,10 +1,11 @@
 # Data: glucose-limited chemostat series
 
-Eight conditions from the chemostat series of Xia et al. (2022), *Nat Commun* 13:2819, [doi:10.1038/s41467-022-30513-2](https://doi.org/10.1038/s41467-022-30513-2), in the formats of the pipeline's `data/`.
+Nine conditions from the chemostat series of Xia et al. (2022), *Nat Commun* 13:2819, [doi:10.1038/s41467-022-30513-2](https://doi.org/10.1038/s41467-022-30513-2), in the formats of the pipeline's `data/`.
 
 | Condition | D [1/h] | Proteomics samples | Ptot [g/gDW] |
 |---|---|---|---|
 | mu003 | 0.027 | S1–S3 (μ = 0.027) | 0.299 |
+| mu004 | 0.044 | S4–S6 (μ = 0.044) | 0.312 |
 | mu010 | 0.10225 | S7–S9 (μ = 0.102) | 0.371 |
 | mu015 | 0.152 | S10–S12 (μ = 0.152) | 0.419 |
 | mu021 | 0.21425 | S13–S15 (μ = 0.214) | 0.320 |
@@ -12,8 +13,6 @@ Eight conditions from the chemostat series of Xia et al. (2022), *Nat Commun* 13
 | mu028 | 0.28425 | S19–S21 (μ = 0.284) | 0.391 |
 | mu033 | 0.33375 | S22–S24 (μ = 0.334) | 0.419 |
 | mu038 | 0.3785 | S25–S27 (μ = 0.379) | 0.391 |
-
-The series' μ = 0.044 condition (S4–S6) is not used.
 
 The source spreadsheets of the paper are not committed:
 
@@ -33,6 +32,6 @@ Unlike the data of this study, this series quantifies ribosomal paralog groups (
 
 ## Core ribosome
 
-The 48 subunits of this study, except at seven positions where the measured paralog takes the place of this study's member (`this_study_uniprot` gives the one it replaces). At five of them this series has the other paralog 5–295× more abundant, where this study had its own member more abundant: RPL26 (295×), RPL9 (22×), RPS1 (8.6×), RPL21 (8.1×) and RPL8 (5.2×). At the other two this study's member lacks a measurement in some samples, so the pipeline gives it no average: RPS19B is missing in 8 of 24 samples (RPS19A is 5.3× more abundant), and RPL33B is in one sample of 24, where it is 7× more abundant than RPL33A. RPL33A averages 6.9e-6 mmol/gDW, below the core threshold of 1e-5, and is the only swapped subunit the model raises (1.6–4.6×, at every condition but mu003). RPS10B is not in this series; neither RPS10 paralog was detected.
+The 48 subunits of this study, except at seven positions where the measured paralog takes the place of this study's member (`this_study_uniprot` gives the one it replaces). At five of them this series has the other paralog 5–295× more abundant, where this study had its own member more abundant: RPL26 (295×), RPL9 (22×), RPS1 (8.6×), RPL21 (8.1×) and RPL8 (5.2×). At the other two this study's member lacks a measurement in some samples, so the pipeline gives it no average: RPS19B is missing in 8 of 27 samples (RPS19A is 5.3× more abundant), and RPL33B is in one sample of 27, where it is 7× more abundant than RPL33A. RPL33A averages 6.6e-6 mmol/gDW, below the core threshold of 1e-5, and is the only swapped subunit the model raises (1.08–4.6×, at every condition but mu003). RPS10B is not in this series; neither RPS10 paralog was detected.
 
 Re-selected by abundance on this series the core has 77 subunits, among them paralog groups, both paralogs of RPL6 and RPL16, and TEF4, so the two datasets would no longer model the same ribosome.
