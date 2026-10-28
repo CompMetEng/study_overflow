@@ -11,12 +11,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13", "3.14", "3.15"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      # swiglpk (a cobra/optlang dependency) publishes no Python 3.15 wheel, so pip
+      # builds it from source, which needs the GLPK headers and SWIG.
+      - name: Install GLPK build dependencies
+        if: matrix.python-version == '3.15'
+        run: sudo apt-get update && sudo apt-get install -y libglpk-dev swig
       - name: Install
         run: |
           python -m pip install --upgrade pip
